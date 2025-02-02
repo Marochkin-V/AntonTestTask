@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -6,6 +6,8 @@ using UnityEngine.EventSystems;
 [RequireComponent(typeof(CharacterController))]
 public class PlayerControl : MonoBehaviour
 {
+    // Можно отрефакторить и раскинуть по нескольким скриптам
+
     [SerializeField] public float moveSpeed;
     [SerializeField] public float rotateSpeed;
 
@@ -29,6 +31,9 @@ public class PlayerControl : MonoBehaviour
 
     [SerializeField] private Animator anim;
 
+    [SerializeField] private int maxHp = 100;
+    [SerializeField] private int hp;
+
 
     void Start()
     {
@@ -38,6 +43,8 @@ public class PlayerControl : MonoBehaviour
         float maxHeightTime = maxJumpTime / 2;
         gravityForce = (2 * maxJumpHeight) / Mathf.Pow(maxHeightTime, 2);
         startJumpVelocity = (2 * maxJumpHeight) / maxHeightTime;
+
+        hp = maxHp;
     }
 
     void Update()
@@ -69,6 +76,11 @@ public class PlayerControl : MonoBehaviour
         anim.SetBool("Jump", velocityDirection.y != -0.5f);
         anim.SetBool("FreeFall", velocityDirection.y < 0 && velocityDirection.y > -0.5f);
         anim.SetFloat("Speed", Mathf.Abs(velocityDirection.x));
+
+        if (hp <= 0)
+        {
+            EventManager.RaisePlayerDeathEvent(true);
+        }
     }
 
     public void MovePlayer(Vector3 dir)
@@ -84,5 +96,11 @@ public class PlayerControl : MonoBehaviour
             Quaternion targetRotation = Quaternion.LookRotation(dir, Vector3.up);
             transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, rotateSpeed * Time.deltaTime);
         }
+    }
+
+    public void GetDamage(int damage)
+    {
+        hp -= damage;
+        Debug.Log(hp);
     }
 }
